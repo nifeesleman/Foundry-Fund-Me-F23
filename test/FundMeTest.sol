@@ -12,7 +12,7 @@ contract FundMeTest is Test {
     address priceFeedAddress = 0x694AA1769357215DE4FAC081bf1f309aDC325306; // ✅ Sepolia ETH/USD Price Feed Address
     address USER = makeAddr("user");
     uint256 constant SEND_VALUE = 0.1 ether;
-    uint256 constant STARTING_BALANCE = 20 ether;
+    uint256 constant STARTING_BALANCE = 200 ether;
 
     function setUp() external {
         DeployFundMe deployFundMe = new DeployFundMe();
@@ -62,22 +62,44 @@ contract FundMeTest is Test {
         fundMe.withdraw();
     }
 
-    function testWithDrawWithASingleFunder() public funded {
-        //Arrange
-        uint256 startingOwnerBalance = fundMe.getOwner().balance;
-        uint256 startingFundMeBalance = address(fundMe).balance;
+//     function testWithDrawWithASingleFunder() public funded {
+//         //Arrange
+//         uint256 startingOwnerBalance = fundMe.getOwner().balance;
+//         uint256 startingFundMeBalance = address(fundMe).balance;
 
-        //Act
-        vm.prank(fundMe.getOwner());
-        fundMe.withdraw();
+//         //Act
+//         vm.prank(fundMe.getOwner());
+//         fundMe.withdraw();
 
-        //Assert
-        uint256 endingOwnerBalance = fundMe.getOwner().balance;
-        uint256 endingFundMeBalance = address(fundMe).balance;
-        assertEq(endingFundMeBalance, 0);
-        assertEq(
-            startingFundMeBalance + startingOwnerBalance,
-            endingOwnerBalance
-        );
-    }
-}
+//         //Assert
+//         uint256 endingOwnerBalance = fundMe.getOwner().balance;
+//         uint256 endingFundMeBalance = address(fundMe).balance;
+//         assertEq(endingFundMeBalance, 0);
+//         assertEq(
+//             startingFundMeBalance + startingOwnerBalance,
+//             endingOwnerBalance
+//         );
+//     }
+// }
+function testWithDrawWithASingleFunder() public funded {
+    // Arrange
+    uint256 startingOwnerBalance = fundMe.getOwner().balance;
+    uint256 startingFundMeBalance = address(fundMe).balance;
+
+    // Act
+    vm.prank(fundMe.getOwner()); // Impersonate the owner
+    fundMe.withdraw(); // Withdraw the funds
+
+    // Assert
+    uint256 endingOwnerBalance = fundMe.getOwner().balance;
+    uint256 endingFundMeBalance = address(fundMe).balance;
+
+    // The contract's balance should be 0 after the withdrawal
+    assertEq(endingFundMeBalance, 0);
+
+    // The owner's balance should have increased by the contract's starting balance
+    assertEq(
+        endingOwnerBalance,
+        startingOwnerBalance + startingFundMeBalance
+    );
+}  // Closing brace for the function
