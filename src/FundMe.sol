@@ -12,6 +12,7 @@ contract FundMe {
     address[] public s_funders;
     address private immutable i_owner;
     uint256 public minimumUsd = 5e18;
+
     AggregatorV3Interface public s_priceFeed;
 
     constructor(address priceFeed) {
@@ -30,6 +31,24 @@ contract FundMe {
         s_addressToAmountFunded[msg.sender] += msg.value;
     }
 
+    function cheapWithdraw() public onlyOwner {
+        uint256 funderLenght = s_funders.length;
+        for (
+            uint256 funderIndex = 0;
+            funderIndex < funderLenght;
+            funderIndex++
+        ) {
+            address funder = s_funders[funderIndex];
+            s_addressToAmountFunded[funder] = 0;
+        }
+        s_funders = new address[](0);
+        //call
+        (bool callSuccess, ) = payable(msg.sender).call{
+            value: address(this).balance
+        }("");
+        require(callSuccess, "call failed");
+    }
+
     function withdraw() public onlyOwner {
         for (
             uint256 funderIndex = 0;
@@ -45,7 +64,6 @@ contract FundMe {
             value: address(this).balance
         }("");
         require(callSuccess, "call failed");
-        revert();
     }
 
     function getVersion() public view returns (uint256) {
